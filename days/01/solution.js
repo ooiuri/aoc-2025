@@ -1,39 +1,57 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 
-const filePath = path.join(process.cwd(), 'input.txt')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const filePath = path.join(__dirname, 'input.txt')
 console.log('filePath, ', filePath)
 
 class Dial {
     count;
     position;
+    moves;
 
     constructor () {
         this.count = 0;
         this.position = 50;
+        this.moves = [];
     }
 
     update_position(position) {
         let value = this.position + position;
-
+        if (value === 100) {
+            value = 0;
+        }
+        let overflow = Math.floor(Math.abs(value)/100)
+        if (overflow > 0) {
+            this.count += overflow
+        } 
         if(value >= 100) {
             value = value % 100;
-            // const timesOverZero = Math.floor(position / 100);
-            // if (timesOverZero > 0) {
-            //     this.count += timesOverZero - 1;
-            // } 
         }
         if(value < 0) {
+            const lastMove = this.moves[this.moves.length - 1] 
+            if ( lastMove !== 0 && lastMove !== 100){
+                this.count++;
+            }
             value = value % 100 + 100;
+            if(value === 100) {
+                value = 0;
+            }
         }
-
+        
         this.position = value;
-        
-        
-        if(value === 0) {
+        if(overflow === 0 && (value === 0 || value === 100)) {
             this.count++
         }
+
+        this.moves.push(this.position);
+
         console.log('this.position: ', this.position)
+        console.log('this.count: ', this.count)
     }
 
     move(input) {
